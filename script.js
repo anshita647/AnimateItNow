@@ -20,14 +20,14 @@ typeWriter();
   const body = document.body;
 
   function setTheme(dark) {
-    if (dark) {
-      body.classList.add('dark');
-      themeToggle.textContent = '☀️';
-      localStorage.setItem('theme', 'dark');
-    } else {
-      body.classList.remove('dark');
-      themeToggle.textContent = '🌙';
-      localStorage.setItem('theme', 'light');
+    const newIcon = dark ? 'sun' : 'moon';
+    body.classList.toggle('dark', dark);
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+
+    // Replace icon completely
+    if (themeToggle) {
+      themeToggle.innerHTML = `<i data-lucide="${newIcon}"></i>`;
+      lucide.createIcons();
     }
   }
 
@@ -35,8 +35,12 @@ typeWriter();
   setTheme(savedTheme === 'dark');
 
   themeToggle?.addEventListener('click', () => {
-    setTheme(!body.classList.contains('dark'));
+    const isDark = body.classList.contains('dark');
+    setTheme(!isDark);
   });
+
+  lucide.createIcons();
+
 
   // 🔽 Scroll Reveal Animation
   const observer = new IntersectionObserver((entries) => {
@@ -77,23 +81,29 @@ typeWriter();
 
   // 📨 Contact form validation
   const contactForm = document.querySelector('.contact-form');
-  const submitBtn = document.querySelector('.submit-btn');
-
-  if (contactForm && submitBtn) {
-    const formInputs = contactForm.querySelectorAll('input[required], textarea[required]');
-    submitBtn.disabled = true;
-
+  const formInputs = contactForm.querySelectorAll('input[required], textarea[required]');
+  if (contactForm) {
     function checkFormValidity() {
-      let allFieldsFilled = [...formInputs].every(input => input.value.trim() !== '');
-      submitBtn.disabled = !allFieldsFilled;
-      submitBtn.classList.toggle('disabled', !allFieldsFilled);
+      return [...formInputs].every(input => input.value.trim() !== '');
     }
-
+    contactForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const allValid = checkFormValidity();
+      if (allValid) {
+        alert('Message sent successfully!');
+        contactForm.reset();
+      } else {
+        alert('Please fill in all fields correctly. Fields cannot be empty or contain only spaces.');
+      }
+    });
     formInputs.forEach(input => {
-      input.addEventListener('input', checkFormValidity);
-      input.addEventListener('blur', checkFormValidity);
+      input.addEventListener('input', () => {
+        const allFieldsFilled = checkFormValidity();
+        input.classList.toggle('invalid', !allFieldsFilled);
+      });
     });
   }
+  
 
   // 🧑‍💻 Contributors fetch
   const contributorsGrid = document.getElementById('contributors-grid');
@@ -121,10 +131,13 @@ typeWriter();
         contributorsGrid.innerHTML = '<p>Could not load contributors at this time.</p>';
       });
   }
-
+  
 const isMobile = window.matchMedia('(max-width: 768px)').matches;
+const cursorToggle = document.getElementById('cursorToggle');
 
-if (!isMobile) {
+function enableSnakeCursor() {
+  // Avoid duplicate containers if the toggle is flipped on again
+  if (document.getElementById('cursor-snake')) return;
 
   const snakeContainer = document.createElement('div');
   snakeContainer.id = 'cursor-snake';
@@ -158,10 +171,47 @@ if (!isMobile) {
       x = dot.x;
       y = dot.y;
     });
-    requestAnimationFrame(animateSnake);
+
+    // Save the animation ID to stop later
+    snakeContainer.animationId = requestAnimationFrame(animateSnake);
   }
+
   animateSnake();
 }
+
+function disableSnakeCursor() {
+  const snake = document.getElementById('cursor-snake');
+  if (snake) {
+    cancelAnimationFrame(snake.animationId); // Stop the animation
+    snake.remove(); // Remove all dots
+  }
+}
+
+// Add toggle functionality
+if (!isMobile && cursorToggle) {
+  cursorToggle.addEventListener('change', function () {
+    if (this.checked) {
+      enableSnakeCursor();
+    } else {
+      disableSnakeCursor();
+    }
+  });
+}
+
+
+  // 🚦 ProgressBar Functionality
+  function updateProgressBar() {
+    const windowScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const documentHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrollPercent = (windowScroll / documentHeight) * 100;
+    const progressBar = document.getElementById('progress-bar');
+    if (progressBar) {
+      progressBar.style.width = scrollPercent + '%';
+    }
+  }
+  window.addEventListener('scroll', updateProgressBar);
+  // Initialize on load
+  updateProgressBar();
 
 
 });
