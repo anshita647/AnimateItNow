@@ -3,20 +3,16 @@ window.addEventListener('DOMContentLoaded', () => {
   const el=document.getElementById("modify");
   if(!el)return;
   const text=el.textContent;
-  function start(){
-  el.textContent="";
+  el.textContent='';
   let index=0;
   let interval=setInterval(function(){
     if(index<text.length){
 el.textContent+=text.charAt(index);
 index++;    }
 else{
-  clearInterval(interval);
-  setTimeout(start,1000);
-}
+  clearInterval(interval);}
   },100);
 }
-start();}
 typeWriter();
 
   // Theme toggle
